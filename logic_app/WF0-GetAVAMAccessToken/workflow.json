@@ -1,0 +1,159 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Get_CLIENT-APP-ID": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "keyvault_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('CLIENT-APP-ID')}/value"
+                },
+                "runAfter": {}
+            },
+            "Get_CLIENT-APP-SECRET": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "keyvault_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('CLIENT-APP-SECRET')}/value"
+                },
+                "runAfter": {
+                    "Get_CLIENT-APP-ID": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Get_TENANT-ID": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "keyvault_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('TENANT-ID')}/value"
+                },
+                "runAfter": {
+                    "Get_CLIENT-APP-SECRET": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Get_AAD_Token_with_Service_Principal": {
+                "type": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "uri": "https://login.microsoftonline.com/@{body('Get_TENANT-ID')?['value']}/oauth2/v2.0/token",
+                    "headers": {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    "body": "grant_type=client_credentials&client_id=@{body('Get_CLIENT-APP-ID')?['value']}&client_secret=@{body('Get_CLIENT-APP-SECRET')?['value']}&scope=https://management.azure.com/.default"
+                },
+                "runAfter": {
+                    "Get_AVAM-RESOURCE-ID": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Response": {
+                "type": "Response",
+                "kind": "http",
+                "inputs": {
+                    "statusCode": "@outputs('Get_AVAM_Management_Token')['statusCode']",
+                    "headers": "@outputs('Get_AVAM_Management_Token')['headers']",
+                    "body": "@body('Get_AVAM_Management_Token')"
+                },
+                "runAfter": {
+                    "Get_AVAM_Management_Token": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Parse_AAD_Token_from_Response": {
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@body('Get_AAD_Token_with_Service_Principal')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "token_type": {
+                                "type": "string"
+                            },
+                            "expires_in": {
+                                "type": "integer"
+                            },
+                            "ext_expires_in": {
+                                "type": "integer"
+                            },
+                            "access_token": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Get_AAD_Token_with_Service_Principal": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Get_AVAM_Management_Token": {
+                "type": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "uri": "https://management.azure.com@{body('Get_AVAM-RESOURCE-ID')?['value']}/generateAccessToken?api-version=2021-10-18-preview",
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer @{body('Parse_AAD_Token_from_Response')?['access_token']}"
+                    },
+                    "body": {
+                        "permissionType": "Contributor",
+                        "scope": "Account"
+                    }
+                },
+                "runAfter": {
+                    "Parse_AAD_Token_from_Response": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Get_AVAM-RESOURCE-ID": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "keyvault_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('AVAM-RESOURCE-ID')}/value"
+                },
+                "runAfter": {
+                    "Get_TENANT-ID": [
+                        "Succeeded"
+                    ]
+                }
+            }
+        },
+        "triggers": {
+            "manual": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {}
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {}
+    },
+    "kind": "Stateful"
+}

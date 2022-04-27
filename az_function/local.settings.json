@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "VIDEO_UPLOAD_STORAGE_CONN_STRING": "DefaultEndpointsProtocol=https;AccountName=bdlvideodubbing02;AccountKey=PMHqG3d9BhBk8cOVMaWpTvMLfEKOWk6R5gqdb8a6f+VByzB+ysu/R/S/q9VmFvmLbNi5STzUEn2sUPCR1f3qcw==;EndpointSuffix=core.windows.net",
+    "VIDEO_UPLOAD_STORAGE_CONTAINER": "videodubbing",
+    "SPEECH_SERVICE_KEY": "9e0bb55fe08a49e8a517955a886409fd",
+    "SPEECH_SERVICE_KEY_REGION": "eastus2"
+  }
+}

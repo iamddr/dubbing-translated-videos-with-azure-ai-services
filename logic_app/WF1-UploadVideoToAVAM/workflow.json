@@ -1,0 +1,175 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Get_AVAM-ACCOUNT-ID": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "keyvault_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('AVAM-ACCOUNT-ID')}/value"
+                },
+                "runAfter": {}
+            },
+            "Get_AVAM_Access_Token": {
+                "type": "Http",
+                "inputs": {
+                    "method": "GET",
+                    "uri": "@body('Get_LOGICAPP-ENDPOINT-GET-AVAM-ACCESS-TOKEN')?['value']"
+                },
+                "runAfter": {
+                    "Get_LOGICAPP-ENDPOINT-GET-AVAM-ACCESS-TOKEN": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Parse_access_token": {
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@body('Get_AVAM_Access_Token')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "accessToken": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Get_AVAM_Access_Token": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Create_SAS_URI_for_Video": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "azureblob"
+                        }
+                    },
+                    "method": "post",
+                    "body": {
+                        "Permissions": "Read"
+                    },
+                    "path": "/v2/datasets/@{encodeURIComponent('AccountNameFromSettings')}/CreateSharedLinkByPath",
+                    "queries": {
+                        "path": "@triggerBody()?['Path']"
+                    }
+                },
+                "runAfter": {
+                    "Parse_access_token": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Get_AVAM-ACCOUNT-REGION": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "keyvault_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('AVAM-ACCOUNT-REGION')}/value"
+                },
+                "runAfter": {
+                    "Get_AVAM-ACCOUNT-ID": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Upload_Video_to_AVAM": {
+                "type": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "uri": "https://api.videoindexer.ai/@{body('Get_AVAM-ACCOUNT-REGION')?['value']}/Accounts/@{body('Get_AVAM-ACCOUNT-ID')?['value']}/Videos",
+                    "headers": {
+                        "Authorization": "Bearer @{body('Parse_access_token')?['accessToken']}"
+                    },
+                    "queries": {
+                        "name": "@triggerBody()?['Name']",
+                        "videoUrl": "@body('Create_SAS_URI_for_Video')?['WebUrl']",
+                        "callbackUrl": "@body('Get_LOGICAPP-ENDPOINT-AVAM-UPLOAD-CALLBACK')?['value']"
+                    }
+                },
+                "runAfter": {
+                    "Create_SAS_URI_for_Video": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Get_LOGICAPP-ENDPOINT-AVAM-UPLOAD-CALLBACK": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "keyvault_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('LOGICAPP-ENDPOINT-AVAM-UPLOAD-CALLBACK')}/value"
+                },
+                "runAfter": {
+                    "Get_AVAM-ACCOUNT-REGION": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Get_LOGICAPP-ENDPOINT-GET-AVAM-ACCESS-TOKEN": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "keyvault_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('LOGICAPP-ENDPOINT-GET-AVAM-ACCESS-TOKEN')}/value"
+                },
+                "runAfter": {
+                    "Get_LOGICAPP-ENDPOINT-AVAM-UPLOAD-CALLBACK": [
+                        "Succeeded"
+                    ]
+                }
+            }
+        },
+        "triggers": {
+            "When_video_is_uploaded_to_storage": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "azureblob"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('AccountNameFromSettings'))}/triggers/batch/onupdatedfile",
+                    "queries": {
+                        "folderId": "JTJmdmlkZW9kdWJiaW5nJTJmdXBsb2FkcyUyZg==",
+                        "checkBothCreatedAndModifiedDateTime": false,
+                        "maxFileCount": 1
+                    }
+                },
+                "recurrence": {
+                    "frequency": "Second",
+                    "interval": 15
+                },
+                "metadata": {
+                    "JTJmdmlkZW9kdWJiaW5nJTJmdXBsb2FkcyUyZg==": "/videodubbing/uploads/"
+                },
+                "splitOn": "@triggerBody()"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {}
+    },
+    "kind": "Stateful"
+}
