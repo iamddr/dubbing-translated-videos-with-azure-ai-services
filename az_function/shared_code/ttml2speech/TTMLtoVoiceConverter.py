@@ -80,26 +80,6 @@ class TTMLtoVoiceConverter:
         ## Final item in the list
         current_phrase['duration'] = (datetime.strptime(current_phrase['end'], "%H:%M:%S.%f") - datetime.strptime(current_phrase['begin'], "%H:%M:%S.%f")).total_seconds()
         parsed_phrase_list.append(current_phrase)
-
-        # ## calculate the breaks for the phrases
-        # phrase_start_times_list = [phrase['begin'] for phrase in parsed_phrase_list]
-        # phrase_end_times_list = [phrase['end'] for phrase in parsed_phrase_list]
-
-        # starting_value_= "00:00:00.000"
-
-        # ## Add the start of the file as the first "endtime" to calculate the first break
-        # phrase_end_times_list.insert(0, starting_value_)
-
-        # ## Calcualte the difference between the start and end times for breaks
-        # combined_list = zip(phrase_start_times_list, phrase_end_times_list)
-        # differences_list = [
-        #     (datetime.strptime(start_time, "%H:%M:%S.%f") - datetime.strptime(end_time, "%H:%M:%S.%f")).total_seconds() 
-        #     for start_time, end_time in combined_list
-        # ]
-        
-        # ## Add the breaks to the parsed_phrase_list
-        # for i in range(len(parsed_phrase_list)):
-        #     parsed_phrase_list[i]['break'] = differences_list[i]
         
         return parsed_phrase_list
 
@@ -140,8 +120,6 @@ class TTMLtoVoiceConverter:
     def calculate_prosody_rates(self, sentences_list, duration_key="adjusted_duration")->float:
         ## Ignore statements that are SHORTER than the original duration.
         logging.warning(json.dumps(sentences_list, indent=4))
-
-        
 
         sentences_to_adjust = [
             (sentence['adjusted_duration'], sentence['duration'], sentence['adjusted_duration'] - sentence['duration']) 
