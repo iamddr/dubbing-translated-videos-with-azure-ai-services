@@ -55,6 +55,20 @@
         "scheme": "Key",
         "parameter": "@appsetting('keyvault_1-connectionKey')"
       }
+    },
+    "azureblob_1": {
+      "api": {
+        "id": "/subscriptions/eb489f58-b7f7-4001-a82b-bc18cac70b3b/providers/Microsoft.Web/locations/eastus2/managedApis/azureblob"
+      },
+      "connection": {
+        "id": "/subscriptions/eb489f58-b7f7-4001-a82b-bc18cac70b3b/resourceGroups/RG-VideoDubbing-02/providers/Microsoft.Web/connections/azureblob-2"
+      },
+      "connectionRuntimeUrl": "https://6b5c4ca400047611.08.common.logic-eastus2.azure-apihub.net/apim/azureblob/fb1509374334483b8e9975be469959d8/",
+      "authentication": {
+        "type": "Raw",
+        "scheme": "Key",
+        "parameter": "@appsetting('azureblob_1-connectionKey')"
+      }
     }
   },
   "functionConnections": {

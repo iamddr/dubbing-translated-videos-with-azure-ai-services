@@ -1,11 +1,22 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "AzureWebJobsStorage": "",
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=bdlvideodubbing02;AccountKey=PMHqG3d9BhBk8cOVMaWpTvMLfEKOWk6R5gqdb8a6f+VByzB+ysu/R/S/q9VmFvmLbNi5STzUEn2sUPCR1f3qcw==;EndpointSuffix=core.windows.net",
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "VIDEO_UPLOAD_STORAGE_CONN_STRING": "DefaultEndpointsProtocol=https;AccountName=bdlvideodubbing02;AccountKey=PMHqG3d9BhBk8cOVMaWpTvMLfEKOWk6R5gqdb8a6f+VByzB+ysu/R/S/q9VmFvmLbNi5STzUEn2sUPCR1f3qcw==;EndpointSuffix=core.windows.net",
     "VIDEO_UPLOAD_STORAGE_CONTAINER": "videodubbing",
     "SPEECH_SERVICE_KEY": "9e0bb55fe08a49e8a517955a886409fd",
-    "SPEECH_SERVICE_KEY_REGION": "eastus2"
+    "SPEECH_SERVICE_KEY_REGION": "eastus2",
+    "CLIENT_APP_ID": "b0c2e055-0dd7-41a2-ab6e-47b8ff750067",
+    "CLIENT_APP_SECRET": "3il7Q~T9MGXUFQ~JMr-eJydO.LNQs46r9-lb4",
+    "CLIENT_APP_TENANT_ID": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+    "AZURE_SUBSCRIPTION_ID": "eb489f58-b7f7-4001-a82b-bc18cac70b3b",
+    "MEDIA_SERVICES_RESOURCE_GROUP" : "RG-VideoDubbing-02",
+    "MEDIA_SERVICES_ACCOUNT_NAME" : "bdlvideodubbing02medsvc",
+    "MEDIA_SERVICES_STORAGE_ACCOUNT_CONNECTION_STRING" : "DefaultEndpointsProtocol=https;AccountName=bdlvideodubbingmediasvcs;AccountKey=uEUbInCooguKg+x4ePeEeZ744fVeKQaXMJHY9avanH9CqX/8ZY3w9SYzF5OSlnwhxX2UZqDdcaMk7aJ5hlYKcA==;EndpointSuffix=core.windows.net",
+    "FUNCTIONS_EXTENSION_VERSION": "~3",
+    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "DefaultEndpointsProtocol=https;AccountName=bdlvideodubbing02;AccountKey=PMHqG3d9BhBk8cOVMaWpTvMLfEKOWk6R5gqdb8a6f+VByzB+ysu/R/S/q9VmFvmLbNi5STzUEn2sUPCR1f3qcw==;EndpointSuffix=core.windows.net",
+    "WEBSITE_CONTENTSHARE": "bdl-videodubbing-azfuncf90378",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "02d4602f-109a-4ab1-8cc6-0318bed61e1e"
   }
 }
