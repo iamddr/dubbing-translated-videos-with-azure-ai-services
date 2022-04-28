@@ -174,14 +174,14 @@ class TTMLtoVoiceConverter:
 
         ## TODO: update the ssml to incorporate the breaks.
 
-
         return sentences_list
 
     def calculate_duration(self, wave_filename):
-        with contextlib.closing(wave.open(wave_filename, 'r')) as f:
-            frames = f.getnframes()
-            rate = f.getframerate()
-            duration = frames / float(rate)
+        f = wave.open(wave_filename, 'r')
+        frames = f.getnframes()
+        rate = f.getframerate()
+        duration = frames / float(rate)
+        f.close()
         return duration
 
     def generate_ssml_breaks(self, sentences_list) -> list:
