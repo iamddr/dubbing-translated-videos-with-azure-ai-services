@@ -7,6 +7,7 @@ import wave
 import contextlib
 from xml.etree import ElementTree
 import shutil
+import logging
 
 class TTMLtoVoiceConverter:
     def __init__(self, ttml_text = None, ttml_file_path = None, output_staging_directory = None, prefix = 'tts'):
@@ -103,23 +104,29 @@ class TTMLtoVoiceConverter:
         return parsed_phrase_list
 
     def pre_process_audio_snippets(self, sentences_list, clip_audio_directory="preprocessed", avg_prosody_rate=1, duration_key="adjusted_duration"):
+        
         temp_audio_folder_path = os.path.join(self.output_staging_directory, clip_audio_directory)
         os.makedirs(temp_audio_folder_path, exist_ok=True)
 
         for i, sentence in enumerate(sentences_list):
+            
             filename = os.path.join(temp_audio_folder_path, f"{self.prefix}_{i}.wav")
             sentences_list[i]['audio_file'] = filename
             
             ## get the SSML for the sentence
             phrase_ssml = self.build_ssml([sentence], insert_breaks=False, output_files = False, prosody_rate=avg_prosody_rate)
+                       
             sentences_list[i]['phrase_ssml'] = phrase_ssml
-            
-            speech_synthesizer = self.get_speech_synthesizer(filename, )
+
+            speech_synthesizer = self.get_speech_synthesizer(output_filename=filename)
             resp = speech_synthesizer.speak_ssml_async(phrase_ssml).get()
             
             self.check_speech_result(resp, phrase_ssml)
 
-            sentences_list[i][duration_key] = self.calculate_duration(sentence['audio_file'])       
+            if sentence['text'] == "":
+                sentences_list[i][duration_key] = 0
+                continue
+            sentences_list[i][duration_key] = self.calculate_duration(filename)       
         
         self.sentences_list = sentences_list
         return sentences_list
@@ -132,6 +139,10 @@ class TTMLtoVoiceConverter:
 
     def calculate_prosody_rates(self, sentences_list, duration_key="adjusted_duration")->float:
         ## Ignore statements that are SHORTER than the original duration.
+        logging.warning(json.dumps(sentences_list, indent=4))
+
+        
+
         sentences_to_adjust = [
             (sentence['adjusted_duration'], sentence['duration'], sentence['adjusted_duration'] - sentence['duration']) 
             for sentence in sentences_list if sentence['adjusted_duration'] > sentence['duration']
@@ -177,11 +188,11 @@ class TTMLtoVoiceConverter:
         return sentences_list
 
     def calculate_duration(self, wave_filename):
-        f = wave.open(wave_filename, 'r')
-        frames = f.getnframes()
-        rate = f.getframerate()
-        duration = frames / float(rate)
-        f.close()
+        with contextlib.closing(wave.open(wave_filename, 'rb')) as f:
+            frames = f.getnframes()
+            rate = f.getframerate()
+            duration = frames / float(rate)
+
         return duration
 
     def generate_ssml_breaks(self, sentences_list) -> list:
@@ -214,23 +225,13 @@ class TTMLtoVoiceConverter:
             sentences_list[i]['phrase_ssml_with_breaks'] = ElementTree.tostring(root, encoding='unicode')
         return sentences_list
             
-
-
-
-
-
-
-
-        
-        
-
     def build_ssml(self, 
-        sentences_list, 
-        insert_breaks=True, 
-        output_files=True, 
-        output_file_num = None, 
-        prosody_rate = 1, 
-        file_start="00:00:00.000"
+            sentences_list, 
+            insert_breaks=True, 
+            output_files=True, 
+            output_file_num = None, 
+            prosody_rate = 1, 
+            file_start="00:00:00.000"
         ):
         ## Build the ElementTree tree for SSML
         root = ElementTree.Element("speak", attrib={'version':'1.0', 'xmlns':'http://www.w3.org/2001/10/synthesis', 'xml:lang': f'{self.voice_language}'})
@@ -297,15 +298,15 @@ class TTMLtoVoiceConverter:
     def check_speech_result(self,result, text):
         from azure.cognitiveservices.speech import ResultReason, CancellationReason
         if result.reason == ResultReason.SynthesizingAudioCompleted:
-            print("Speech synthesized for text [{}]".format(text))
+            logging.info("Speech synthesized for text [{}]".format(text))
         elif result.reason == ResultReason.Canceled:
             cancellation_details = result.cancellation_details
-            print("Speech synthesis canceled: {}".format(cancellation_details.reason))
-            print("Supplied text was ", text)
+            logging.info("Speech synthesis canceled: {}".format(cancellation_details.reason))
+            logging.info("Supplied text was ", text)
             if cancellation_details.reason == CancellationReason.Error:
                 if cancellation_details.error_details:
-                    print("Error details: {}".format(cancellation_details.error_details))
-            print("Did you update the subscription info?")
+                    logging.info("Error details: {}".format(cancellation_details.error_details))
+            logging.info("Did you update the subscription info?")
     
     def get_speech_synthesizer(self, output_filename = None, speech_synthesis_output_format = None):
 
