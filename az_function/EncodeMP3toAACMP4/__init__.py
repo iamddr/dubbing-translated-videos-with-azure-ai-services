@@ -208,7 +208,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     )
 
     destination_audio_blob.upload_blob_from_url(source_blob_sas_uri, overwrite=True)
-        
+    
+    results_dict = {
+        "file_name": output_mp4.name,
+        "container": video_container_name
+    }
+
     return func.HttpResponse(
-        f"Function completed for {output_mp4.name} in container {video_container_name}", status_code=200
+        json.dumps(results_dict), status_code=200
     )
