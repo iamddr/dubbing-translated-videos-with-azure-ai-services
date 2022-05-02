@@ -8,6 +8,7 @@ import contextlib
 from xml.etree import ElementTree
 import shutil
 import logging
+from pydub import AudioSegment
 
 class TTMLtoVoiceConverter:
     def __init__(self, ttml_text = None, ttml_file_path = None, output_staging_directory = None, prefix = 'tts'):
@@ -48,7 +49,7 @@ class TTMLtoVoiceConverter:
         if ttml_text == None:
             ttml_text = self.ttml_text
         
-        soup = BeautifulSoup(ttml_text, features="html.parser")
+        soup = BeautifulSoup(ttml_text, features="xml")
         captions = soup.select('p')
 
         parsed_phrase_list = []
@@ -119,8 +120,6 @@ class TTMLtoVoiceConverter:
 
     def calculate_prosody_rates(self, sentences_list, duration_key="adjusted_duration")->float:
         ## Ignore statements that are SHORTER than the original duration.
-        logging.warning(json.dumps(sentences_list, indent=4))
-
         sentences_to_adjust = [
             (sentence['adjusted_duration'], sentence['duration'], sentence['adjusted_duration'] - sentence['duration']) 
             for sentence in sentences_list if sentence['adjusted_duration'] > sentence['duration']
@@ -316,3 +315,13 @@ class TTMLtoVoiceConverter:
         speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         resp = speech_synthesizer.speak_text_async(text).get()
         self.check_speech_result(resp, text)
+
+    def trim_or_extend_audio(self, audio_file_path, target_duration):
+        song = AudioSegment.from_mp3(audio_file_path)
+        video_length_milliseconds = int(target_duration * 1000)
+        song_length_milliseconds = len(song)
+        end_gap_length_milliseconds = video_length_milliseconds - song_length_milliseconds
+        logging.info(f"Trimming or extending {audio_file_path} audio by {end_gap_length_milliseconds} milliseconds")
+        ending_slice = AudioSegment.silent(duration=end_gap_length_milliseconds)
+        new_song = song + ending_slice
+        exported_song = new_song.export(audio_file_path, format="mp3")

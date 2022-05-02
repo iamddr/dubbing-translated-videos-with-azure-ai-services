@@ -11,12 +11,16 @@ def main(req: func.HttpRequest): # -> func.HttpResponse:
 
     ## Get the language code from the request
     language_code = req.params.get('language_code')
+    ## language 3-letter code
+    language_3_letter_code = req.params.get('language_three_letter_code')
     ## Get the language voice from the request
     language_voice = req.params.get('language_voice')
     ## Get the ttml text from the request
     ttml = req.get_body().decode('utf-8')
     ## Get the video id
     video_id = req.params.get('video_id')
+    ## Get the video duration
+    video_duration = float(req.params.get('video_duration'))
 
     ## Create the TTML Converter Object
     temp_path = os.path.join(tempfile.gettempdir(), video_id, language_code)
@@ -61,7 +65,7 @@ def main(req: func.HttpRequest): # -> func.HttpResponse:
 
     ## generate the ssml for each the created batches and submit the ssml to the audio for processing
     ## using the same target file and audio config which should allow us to exceed the 10 minute limit for speech sytnthesis. 
-    output_audio_filename = f"{video_id}_{language_code}_{language_voice}.mp3"
+    output_audio_filename = f"{video_id}_{language_code}_{language_3_letter_code}_{language_voice}.mp3"
     output_audio_filepath = os.path.join(temp_path, output_audio_filename)
     
     logging.info(f'Attempting to synthesize the audio to file: {output_audio_filename}')
@@ -70,7 +74,12 @@ def main(req: func.HttpRequest): # -> func.HttpResponse:
         res = speech_synthesizer.speak_ssml_async(sentence['phrase_ssml_with_breaks']).get()
         my_converter.check_speech_result(res, f"SSML for sentences")
     
-    
+    ## trim or extend the audio to match the video duration
+    logging.info(f'Trimming or extending the audio to match the video duration')
+    my_converter.trim_or_extend_audio(
+        audio_file_path=output_audio_filepath,
+        target_duration=video_duration
+    )
     
     ## upload the audio file to the blob storage
     blob_conn_string = os.environ['VIDEO_UPLOAD_STORAGE_CONN_STRING']

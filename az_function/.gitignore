@@ -1,6 +1,8 @@
 # Virtual environmetn
 .venv
 
+scratch_space/
+
 # Visual Studio Code
 .vscode
 
