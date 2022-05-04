@@ -1,15 +1,9 @@
-from pprint import pprint
-
-from http import client
 import logging
-from msilib.schema import Error
 import os
-from pprint import pprint
 import random
 import json
 from datetime import datetime, timedelta
 import time
-from dotenv import load_dotenv
 import azure.functions as func
 from azure.identity import ClientSecretCredential
 from azure.mgmt.media import AzureMediaServices
@@ -213,7 +207,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         "file_name": output_mp4.name,
         "container": video_container_name
     }
-
+    # Retun the results
     return func.HttpResponse(
         json.dumps(results_dict), status_code=200
     )
