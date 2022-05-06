@@ -146,11 +146,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     audio_lang_param = audio_element.find(f"./param[@name='trackName']", namespaces)
     audio_lang_param.set("value", default_language_language_code)
 
+    ## save the updated original audio track
+    audio_element_temp = ET.tostring(audio_element, encoding="unicode")
+
     ## For each .mp4, create a manifest entry and add it to the manifest.xml
     ## Insert all the new audio language definitions into the the top of the switch
     ## tag. The entry order will affect the display order in hte media player.
     ## The last audio entry will be treated as the default.
     switch = root.find("./body/switch", namespaces=namespaces)
+
+    ## delete all the audio tracks from the switch tag, then reinsert the original
+    for audio_element in switch.findall("./audio", namespaces=namespaces):
+        switch.remove(audio_element)
+
+    switch.insert(0, ET.fromstring(audio_element_temp, parser=parser))
 
     for i in range(len(track_list)):
         three_letter_language = track_list[i].split("_")[2]

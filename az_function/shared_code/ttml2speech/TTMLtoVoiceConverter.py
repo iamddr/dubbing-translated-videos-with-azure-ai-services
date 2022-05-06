@@ -118,20 +118,23 @@ class TTMLtoVoiceConverter:
         with open(path, 'w', encoding='utf-8') as f:
             f.write(json.dumps(self.sentences_list, indent=4))
 
-    def calculate_prosody_rates(self, sentences_list, duration_key="adjusted_duration")->float:
+    def calculate_prosody_rates(self, sentences_list, duration_key="adjusted_duration", method="avg")->float:
         ## Ignore statements that are SHORTER than the original duration.
         sentences_to_adjust = [
             (sentence['adjusted_duration'], sentence['duration'], sentence['adjusted_duration'] - sentence['duration']) 
             for sentence in sentences_list if sentence['adjusted_duration'] > sentence['duration']
         ]
 
-        ## Of the remaining statements, choose the one that is LONGEST difference. 
-        max_difference = max([sentence[2] for sentence in sentences_to_adjust])
-        adjustment_tuple = [sentence for sentence in sentences_to_adjust if sentence[2] == max_difference][0]
+        if method == "max":
+            ## Of the remaining statements, choose the one that is LONGEST difference. 
+            max_difference = max([sentence[2] for sentence in sentences_to_adjust])
+            adjustment_tuple = [sentence for sentence in sentences_to_adjust if sentence[2] == max_difference][0]
+            ## Calculate the prosody rate based on the difference of the longest difference phrase. 
+            prosody_rate = adjustment_tuple[0]/adjustment_tuple[1]
+        elif method =="avg":
+            ## calculate the average of the prosody phrases
+            prosody_rate = sum([speed[0]/speed[1] for speed in sentences_to_adjust])/len(sentences_to_adjust)
 
-        ## Calculate the prosody rate based on the difference of the longest difference phrase. 
-        prosody_rate = adjustment_tuple[0]/adjustment_tuple[1]
-        
         return prosody_rate
 
     def calculate_breaks(self, sentences_list):
@@ -159,8 +162,6 @@ class TTMLtoVoiceConverter:
         ## add the preceding breaks to the list
         for i in range(len(differences_list)):
             sentences_list[i]['pre_break_duration'] = differences_list[i]
-
-        ## TODO: update the ssml to incorporate the breaks.
 
         return sentences_list
 

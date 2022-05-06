@@ -9,9 +9,7 @@
       },
       "connectionRuntimeUrl": "https://6b5c4ca400047611.08.common.logic-eastus2.azure-apihub.net/apim/azureblob/a6b8222650034f30a58076791baff5f9/",
       "authentication": {
-        "type": "Raw",
-        "scheme": "Key",
-        "parameter": "@appsetting('azureblob-connectionKey')"
+        "type": "ManagedServiceIdentity"
       }
     },
     "videoindexer-v2": {
@@ -23,9 +21,7 @@
       },
       "connectionRuntimeUrl": "https://6b5c4ca400047611.08.common.logic-eastus2.azure-apihub.net/apim/videoindexer-v2/7fb9213b8d944f4db10f37dc045278c6/",
       "authentication": {
-        "type": "Raw",
-        "scheme": "Key",
-        "parameter": "@appsetting('videoindexer-v2-connectionKey')"
+        "type": "ManagedServiceIdentity"
       }
     },
     "keyvault": {
@@ -37,9 +33,7 @@
       },
       "connectionRuntimeUrl": "https://6b5c4ca400047611.08.common.logic-eastus2.azure-apihub.net/apim/keyvault/b249f3d7d0fc4873b0dacf8c69c97edc/",
       "authentication": {
-        "type": "Raw",
-        "scheme": "Key",
-        "parameter": "@appsetting('keyvault-connectionKey')"
+        "type": "ManagedServiceIdentity"
       }
     },
     "keyvault_1": {
@@ -51,23 +45,7 @@
       },
       "connectionRuntimeUrl": "https://6b5c4ca400047611.08.common.logic-eastus2.azure-apihub.net/apim/keyvault/02b5f3f6abb8480097ece54313b5b416/",
       "authentication": {
-        "type": "Raw",
-        "scheme": "Key",
-        "parameter": "@appsetting('keyvault_1-connectionKey')"
-      }
-    },
-    "azureblob_1": {
-      "api": {
-        "id": "/subscriptions/eb489f58-b7f7-4001-a82b-bc18cac70b3b/providers/Microsoft.Web/locations/eastus2/managedApis/azureblob"
-      },
-      "connection": {
-        "id": "/subscriptions/eb489f58-b7f7-4001-a82b-bc18cac70b3b/resourceGroups/RG-VideoDubbing-02/providers/Microsoft.Web/connections/azureblob-2"
-      },
-      "connectionRuntimeUrl": "https://6b5c4ca400047611.08.common.logic-eastus2.azure-apihub.net/apim/azureblob/fb1509374334483b8e9975be469959d8/",
-      "authentication": {
-        "type": "Raw",
-        "scheme": "Key",
-        "parameter": "@appsetting('azureblob_1-connectionKey')"
+        "type": "ManagedServiceIdentity"
       }
     }
   },
@@ -80,9 +58,57 @@
       "authentication": {
         "type": "QueryString",
         "name": "Code",
-        "value": "@appsetting('azureFunctionOperation_functionAppKey')"
+        "value": "BnDjbWJ5erSRAoGqIjtPRod8UDEXhxBTVapUbNPaHeQmZLLaFnemRQ=="
       },
       "displayName": "video_dubbing_functions"
+    },
+    "azureFunctionOperation-2": {
+      "function": {
+        "id": "/subscriptions/eb489f58-b7f7-4001-a82b-bc18cac70b3b/resourceGroups/RG-VideoDubbing-02/providers/Microsoft.Web/sites/bdl-videodubbing-azfunc/functions/EncodeMP3toAACMP4"
+      },
+      "triggerUrl": "https://bdl-videodubbing-azfunc.azurewebsites.net/api/encodemp3toaacmp4",
+      "authentication": {
+        "type": "QueryString",
+        "name": "Code",
+        "value": "@appsetting('azureFunctionOperation_12_functionAppKey')"
+      },
+      "displayName": "azure_dubbing_functions_encoding"
+    },
+    "azureFunctionOperation-3": {
+      "function": {
+        "id": "/subscriptions/eb489f58-b7f7-4001-a82b-bc18cac70b3b/resourceGroups/RG-VideoDubbing-02/providers/Microsoft.Web/sites/bdl-videodubbing-azfunc-container/functions/TTMLtoSSML"
+      },
+      "triggerUrl": "https://bdl-videodubbing-azfunc-container.azurewebsites.net/api/ttmltossml",
+      "authentication": {
+        "type": "QueryString",
+        "name": "Code",
+        "value": "@appsetting('azureFunctionOperation_13_functionAppKey')"
+      },
+      "displayName": "azure-fn-TTMLtoSSML"
+    },
+    "azureFunctionOperation-4": {
+      "function": {
+        "id": "/subscriptions/eb489f58-b7f7-4001-a82b-bc18cac70b3b/resourceGroups/RG-VideoDubbing-02/providers/Microsoft.Web/sites/bdl-videodubbing-azfunc-container/functions/EncodeMP3toAACMP4"
+      },
+      "triggerUrl": "https://bdl-videodubbing-azfunc-container.azurewebsites.net/api/encodemp3toaacmp4",
+      "authentication": {
+        "type": "QueryString",
+        "name": "Code",
+        "value": "@appsetting('azureFunctionOperation_14_functionAppKey')"
+      },
+      "displayName": "azure-fn-EncodeMP3toAACMP4"
+    },
+    "azureFunctionOperation-5": {
+      "function": {
+        "id": "/subscriptions/eb489f58-b7f7-4001-a82b-bc18cac70b3b/resourceGroups/RG-VideoDubbing-02/providers/Microsoft.Web/sites/bdl-videodubbing-azfunc-container/functions/UpdateVideoManifestXML"
+      },
+      "triggerUrl": "https://bdl-videodubbing-azfunc-container.azurewebsites.net/api/updatevideomanifestxml",
+      "authentication": {
+        "type": "QueryString",
+        "name": "Code",
+        "value": "@appsetting('azureFunctionOperation_15_functionAppKey')"
+      },
+      "displayName": "az-func-UpdateVideoManifestXML"
     }
   }
 }

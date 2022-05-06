@@ -21,7 +21,8 @@ def main(req: func.HttpRequest): # -> func.HttpResponse:
     video_id = req.params.get('video_id')
     ## Get the video duration
     video_duration = float(req.params.get('video_duration'))
-
+    ## Prosody method
+    prosody_method = req.params.get('prosody_method')
     ## Create the TTML Converter Object
     temp_path = os.path.join(tempfile.gettempdir(), video_id, language_code)
     logging.info(f'Creating the temp path {temp_path}')
@@ -47,8 +48,8 @@ def main(req: func.HttpRequest): # -> func.HttpResponse:
     ## Get determine the rate to apply to hte voice to most closely match the original. 
     ## Then Re-preprocess audio snippet but include the average prosody rate
     logging.info('Calculate the optimal prosody rate')
-    prosody_rate = my_converter.calculate_prosody_rates(sentences_list=sentences_list)
-
+    prosody_rate = my_converter.calculate_prosody_rates(sentences_list=sentences_list, method=prosody_method)
+    logging.warning(f"Prosody rate: {prosody_rate}")
     logging.info('Re-preprocess audio to include the average prosody rate')
     sentences_list = my_converter.pre_process_audio_snippets(
         sentences_list=sentences_list, 
@@ -65,7 +66,7 @@ def main(req: func.HttpRequest): # -> func.HttpResponse:
 
     ## generate the ssml for each the created batches and submit the ssml to the audio for processing
     ## using the same target file and audio config which should allow us to exceed the 10 minute limit for speech sytnthesis. 
-    output_audio_filename = f"{video_id}_{language_code}_{language_3_letter_code}_{language_voice}.mp3"
+    output_audio_filename = f"{video_id}_{prosody_method}_{language_code}_{language_3_letter_code}_{language_voice}.mp3"
     output_audio_filepath = os.path.join(temp_path, output_audio_filename)
     
     logging.info(f'Attempting to synthesize the audio to file: {output_audio_filename}')
@@ -99,4 +100,4 @@ def main(req: func.HttpRequest): # -> func.HttpResponse:
     if not blob_client.exists():
         blob_client.upload_blob(json.dumps(sentences_list, indent=4))
 
-    return func.HttpResponse(body="Function successfully ran.", status_code=200)
+    return func.HttpResponse(body=json.dumps(sentences_list), status_code=200)
